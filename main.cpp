@@ -1,6 +1,57 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+
+// Klasa Player
+class Player {
+public:
+    Player(const sf::Color& color, const std::string& name);
+    void draw(sf::RenderWindow& window) const;
+    void setPosition(int position);
+    int getPosition() const;
+    std::string getName() const;
+private:
+    sf::CircleShape mShape;
+    int mPosition;
+    std::string mName;
+};
+
+// Klasa Square
+class Square {
+public:
+    virtual void triggerEvent(Player& player) = 0;
+    virtual ~Square() {}
+};
+
+// Klasa Snake
+class Snake : public Square {
+public:
+    Snake(int start, int end);
+    void triggerEvent(Player& player) override;
+private:
+    int mStart;
+    int mEnd;
+};
+
+// Klasa Ladder
+class Ladder : public Square {
+public:
+    Ladder(int start, int end);
+    void triggerEvent(Player& player) override;
+private:
+    int mStart;
+    int mEnd;
+};
+
+// Klasa Bonus
+class Bonus : public Square {
+public:
+    Bonus(int position);
+    void triggerEvent(Player& player) override;
+private:
+    int mPosition;
+};
+
 // Klasa Board
 class Board {
 public:
