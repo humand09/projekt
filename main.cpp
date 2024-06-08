@@ -423,7 +423,7 @@ void showRules(sf::RenderWindow& window, sf::Font& font) {
 
     sf::Text backButton("Powrot do menu", font, 30);
     backButton.setPosition(windowWidth / 2 - backButton.getGlobalBounds().width / 2, windowHeight - 100);
-    backButton.setFillColor(sf::Color::White);
+    backButton.setFillColor(sf::Color::Black);
 
     while (window.isOpen()) {
         sf::Event event;
