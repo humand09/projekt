@@ -71,6 +71,15 @@ public:
         else {
             mShape.setPosition((9 - col) * 60 + 10, (9 - row) * 60 + 10);
         }
+
+        sf::Vector2f center(285.f, 280.f);
+        sf::Vector2f currentPosition = mShape.getPosition();
+        sf::Vector2f direction = center - currentPosition;
+        float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (length > 0) {
+            direction /= length;
+        }
+        mShape.move(direction * 10.f);
     }
 
     int getPosition() const {
@@ -443,7 +452,8 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
             sf::Vector2f offset(0.f, 0.f);
             if (positionCount[pos] > 1) {
                 int count = drawnCount[pos]++;
-                offset = sf::Vector2f(count * 15.f, 0.f);
+                float angle = 2 * 3.14159f * count / positionCount[pos];
+                offset = sf::Vector2f(std::cos(angle) * 10.f, std::sin(angle) * 10.f);
             }
             player->draw(window, offset);
         }
