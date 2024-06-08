@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <fstream>
+#include <sstream>
 
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
@@ -51,7 +53,7 @@ public:
     }
 
     void draw(sf::RenderWindow& window, const sf::Vector2f& offset) const {
-        sf::CircleShape shape = mShape; // Make a copy to avoid modifying the original position
+        sf::CircleShape shape = mShape; 
         shape.move(offset);
         window.draw(shape);
     }
@@ -199,28 +201,7 @@ public:
         mBoardSprite.setPosition(10, 10);
 
         mSquares.resize(boardSize, nullptr);
-        if (difficulty == EASY) {
-            mSquares[16] = new Ladder(16, 26);
-            mSquares[47] = new Ladder(47, 85);
-            mSquares[36] = new Bonus(36);
-            mSquares[62] = new Snake(62, 19);
-        }
-        else if (difficulty == MEDIUM) {
-            mSquares[16] = new Ladder(16, 26);
-            mSquares[47] = new Ladder(47, 85);
-            mSquares[36] = new Bonus(36);
-            mSquares[62] = new Snake(62, 19);
-            mSquares[89] = new Snake(89, 70);
-        }
-        else if (difficulty == HARD) {
-            mSquares[16] = new Ladder(16, 26);
-            mSquares[47] = new Ladder(47, 85);
-            mSquares[4] = new Ladder(4, 8);
-            mSquares[36] = new Bonus(36);
-            mSquares[16] = new Snake(16, 2);
-            mSquares[8] = new Snake(8, 5);
-            mSquares[95] = new Snake(95, 56);
-        }
+        loadFromFile(getFilenameForDifficulty(difficulty));
     }
 
     void draw(sf::RenderWindow& window) const {
@@ -248,6 +229,49 @@ private:
     sf::Texture mBoardTexture;
     sf::Sprite mBoardSprite;
     std::vector<Square*> mSquares;
+
+    std::string getFilenameForDifficulty(Difficulty difficulty) {
+        switch (difficulty) {
+        case EASY:
+            return "assets/easy.txt";
+        case MEDIUM:
+            return "assets/medium.txt";
+        case HARD:
+            return "assets/hard.txt";
+        default:
+            return "assets/easy.txt";
+        }
+    }
+
+    void loadFromFile(const std::string& filename) {
+        std::ifstream file(filename);
+        if (!file.is_open()) {
+            std::cerr << "Error opening file: " << filename << std::endl;
+            return;
+        }
+
+        std::string line;
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            int type, start, end;
+            iss >> type >> start >> end;
+
+            switch (type) {
+            case 1:
+                mSquares[start] = new Ladder(start, end);
+                break;
+            case 2:
+                mSquares[start] = new Snake(start, end);
+                break;
+            case 3:
+                mSquares[start] = new Bonus(start);
+                break;
+            default:
+                std::cerr << "Unknown type: " << type << std::endl;
+                break;
+            }
+        }
+    }
 };
 
 void loadTextures() {
@@ -428,13 +452,17 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
 }
 
 void showRules(sf::RenderWindow& window, sf::Font& font) {
-    sf::Text rulesText(
-        "Gracze rzucaja koscmi i poruszaja sie o tyle pol, ile wypadnie.\n"
-        "Jesli gracz wejdzie na pole z glowa weza spada na jego koniec.\n"
-        "Jesli wejdzie na pole u dolu drabiny wspina sie na jej gore.\n"
-        "Wygrywa sie dochodzac do ostatniego miejsca planszy.\n"
-        "Pole bonus umozliwia ponowny rzut kostka.",
-        font, 20);
+    std::ifstream file("assets/zasady.txt");
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: zasady.txt" << std::endl;
+        return;
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string rulesTextString = buffer.str();
+
+    sf::Text rulesText(rulesTextString, font, 20);
     rulesText.setPosition(50, 100);
     rulesText.setFillColor(sf::Color::Black);
 
