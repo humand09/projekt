@@ -103,16 +103,34 @@ private:
 
 class Board {
 public:
-    Board() {
+    Board(Difficulty difficulty) {
         if (!mBoardTexture.loadFromFile("board.png")) {
             std::cerr << "Failed to load board texture\n";
         }
         mBoardSprite.setTexture(mBoardTexture);
 
         mSquares.resize(boardSize, nullptr);
-        mSquares[16] = new Snake(16, 6);
-        mSquares[47] = new Ladder(47, 85);
-        mSquares[36] = new Bonus(58);
+        if (difficulty == EASY) {
+            mSquares[16] = new Ladder(16, 26);
+            mSquares[47] = new Ladder(47, 85);
+            mSquares[36] = new Bonus(58);
+            mSquares[62] = new Snake(62, 19);
+        }
+        else if (difficulty == MEDIUM) {
+            mSquares[16] = new Ladder(16, 26);
+            mSquares[47] = new Ladder(47, 85);
+            mSquares[36] = new Bonus(58);
+            mSquares[62] = new Snake(62, 19);
+            mSquares[89] = new Snake(89, 70);
+        }
+        else if (difficulty == HARD) {
+            mSquares[16] = new Ladder(16, 26);
+            mSquares[47] = new Ladder(47, 85);
+            mSquares[36] = new Bonus(58);
+            mSquares[62] = new Snake(62, 19);
+            mSquares[89] = new Snake(89, 70);
+            mSquares[95] = new Snake(95, 56);
+        }
     }
 
     void draw(sf::RenderWindow& window) const {
@@ -143,10 +161,7 @@ void loadTextures() {
     }
 }
 
-int main() {
-    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Snakes and Ladders with Dice Simulation");
-    window.setFramerateLimit(60);
-
+void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) {
     loadTextures();
 
     sf::Sprite diceSprite;
@@ -155,24 +170,31 @@ int main() {
 
     sf::Font font;
     font.loadFromFile("arial.ttf");
-    sf::Text rollButton("Rzuæ kostk¹", font, 30);
+    sf::Text rollButton("Rzuc kostka", font, 30);
     rollButton.setPosition(windowWidth - 200, 50);
+    rollButton.setFillColor(sf::Color::White);
 
     sf::Text stopButton("Stop", font, 30);
     stopButton.setPosition(windowWidth - 200, 100);
+    stopButton.setFillColor(sf::Color::White);
 
     sf::Text diceValue("", font, 30);
     diceValue.setPosition(windowWidth - 200, 150);
+    diceValue.setFillColor(sf::Color::White);
 
     sf::Text playerPositions("", font, 20);
     playerPositions.setPosition(windowWidth - 200, 200);
+    playerPositions.setFillColor(sf::Color::White);
 
-    Board board;
+    Board board(difficulty);
     Player player1(sf::Color::Red, "Player 1");
     Player player2(sf::Color::Blue, "Player 2");
     Player player3(sf::Color::Green, "Player 3");
+    Player player4(sf::Color::Yellow, "Player 4");
 
-    std::vector<Player*> players = { &player1, &player2, &player3 };
+    std::vector<Player*> players = { &player1, &player2, &player3, &player4 };
+    players.resize(numPlayers);
+
     int currentPlayerIndex = 0;
 
     bool isRolling = false;
@@ -210,7 +232,7 @@ int main() {
                         currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
                         board.triggerEvent(*currentPlayer);
                         std::string imageName = diceImageFiles[currentFace].substr(0, diceImageFiles[currentFace].find(".png"));
-                        diceValue.setString("Wartoœæ: " + imageName);
+                        diceValue.setString("Wartosc: " + imageName);
                         diceValue.setPosition(windowWidth - 200, 150);
                         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
                     }
@@ -231,13 +253,13 @@ int main() {
                 currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
                 board.triggerEvent(*currentPlayer);
                 std::string imageName = diceImageFiles[currentFace].substr(0, diceImageFiles[currentFace].find(".png"));
-                diceValue.setString("Wartoœæ: " + imageName);
+                diceValue.setString("Wartosc: " + imageName);
                 diceValue.setPosition(windowWidth - 200, 150);
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             }
 
             if (speed > stopSpeed) {
-                float faceChangeInterval = std::max(0.01f, 0.1f * (initialSpeed / speed)); // Faster speed results in shorter interval
+                float faceChangeInterval = std::max(0.01f, 0.1f * (initialSpeed / speed));
 
                 if (faceChangeClock.getElapsedTime().asSeconds() >= faceChangeInterval) {
                     currentFace = rand() % 6;
@@ -262,9 +284,9 @@ int main() {
 
         window.clear();
         board.draw(window);
-        player1.draw(window);
-        player2.draw(window);
-        player3.draw(window);
+        for (const auto& player : players) {
+            player->draw(window);
+        }
         window.draw(diceSprite);
         window.draw(rollButton);
         window.draw(stopButton);
@@ -274,6 +296,119 @@ int main() {
         }
         window.display();
     }
+}
+
+void showMenu(sf::RenderWindow& window) {
+    sf::Texture backgroundTexture;
+    if (!backgroundTexture.loadFromFile("background.png")) {
+        std::cerr << "Failed to load background texture\n";
+    }
+    sf::Sprite backgroundSprite;
+    backgroundSprite.setTexture(backgroundTexture);
+
+    sf::Font font;
+    font.loadFromFile("arial.ttf");
+
+    sf::Text title("Weze i drabiny", font, 50);
+    title.setPosition(windowWidth / 2 - title.getGlobalBounds().width / 2, 20);
+    title.setFillColor(sf::Color::Black);
+
+    sf::Text newGameButton("Nowa gra", font, 30);
+    newGameButton.setPosition(windowWidth / 2 - newGameButton.getGlobalBounds().width / 2, 100);
+    newGameButton.setFillColor(sf::Color::Black);
+
+    sf::Text difficultyText("Wybor trudnosci:", font, 20);
+    difficultyText.setPosition(windowWidth / 2 - difficultyText.getGlobalBounds().width / 2, 200);
+    difficultyText.setFillColor(sf::Color::Black);
+
+    sf::Text easyOption("Latwy", font, 20);
+    easyOption.setPosition(windowWidth / 2 - 100, 250);
+    easyOption.setFillColor(sf::Color::Black);
+
+    sf::Text mediumOption("Sredni", font, 20);
+    mediumOption.setPosition(windowWidth / 2 - 30, 250);
+    mediumOption.setFillColor(sf::Color::Black);
+
+    sf::Text hardOption("Trudny", font, 20);
+    hardOption.setPosition(windowWidth / 2 + 50, 250);
+    hardOption.setFillColor(sf::Color::Black);
+
+    sf::Text playersText("Ilosc graczy", font, 20);
+    playersText.setPosition(windowWidth / 2 - playersText.getGlobalBounds().width / 2, 300);
+    playersText.setFillColor(sf::Color::Black);
+
+    sf::Text twoPlayers("2", font, 20);
+    twoPlayers.setPosition(windowWidth / 2 - 60, 350);
+    twoPlayers.setFillColor(sf::Color::Black);
+
+    sf::Text threePlayers("3", font, 20);
+    threePlayers.setPosition(windowWidth / 2 - 20, 350);
+    threePlayers.setFillColor(sf::Color::Black);
+
+    sf::Text fourPlayers("4", font, 20);
+    fourPlayers.setPosition(windowWidth / 2 + 20, 350);
+    fourPlayers.setFillColor(sf::Color::Black);
+
+    Difficulty selectedDifficulty = EASY;
+    int selectedPlayers = 2;
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+                    if (newGameButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        startGame(window, selectedDifficulty, selectedPlayers);
+                    }
+                    else if (easyOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedDifficulty = EASY;
+                    }
+                    else if (mediumOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedDifficulty = MEDIUM;
+                    }
+                    else if (hardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedDifficulty = HARD;
+                    }
+                    else if (twoPlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedPlayers = 2;
+                    }
+                    else if (threePlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedPlayers = 3;
+                    }
+                    else if (fourPlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedPlayers = 4;
+                    }
+                }
+            }
+        }
+
+        window.clear();
+        window.draw(backgroundSprite);
+        window.draw(title);
+        window.draw(newGameButton);
+        window.draw(difficultyText);
+        window.draw(easyOption);
+        window.draw(mediumOption);
+        window.draw(hardOption);
+        window.draw(playersText);
+        window.draw(twoPlayers);
+        window.draw(threePlayers);
+        window.draw(fourPlayers);
+
+        window.display();
+    }
+}
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Snakes and Ladders");
+    window.setFramerateLimit(60);
+
+    showMenu(window);
 
     return 0;
 }
