@@ -81,8 +81,9 @@ public:
             sf::Vector2f direction = mTargetPosition - currentPosition;
             float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-            if (distance < 1.0f) {
+            if (distance < 5.0f) {
                 mShape.setPosition(mTargetPosition);
+                mShape.move(5 * (285 - mShape.getPosition().x) / std::sqrt(std::pow(285 - mShape.getPosition().x, 2) + std::pow(280 - mShape.getPosition().y, 2)), 5 * (280 - mShape.getPosition().y) / std::sqrt(std::pow(285 - mShape.getPosition().x, 2) + std::pow(280 - mShape.getPosition().y, 2)));
                 mMoving = false;
             }
             else {
