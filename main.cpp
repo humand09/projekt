@@ -15,7 +15,7 @@ const float stopSpeed = 3.0f;
 const int boardSize = 100;
 
 sf::Texture diceTextures[6];
-std::string diceImageFiles[6] = { "1.png", "2.png", "3.png", "4.png", "5.png", "6.png" };
+std::string diceImageFiles[6] = { "assets/1.png", "assets/2.png", "assets/3.png", "assets/4.png", "assets/5.png", "assets/6.png" };
 
 class Player {
 public:
@@ -104,7 +104,7 @@ private:
 class Board {
 public:
     Board(Difficulty difficulty) {
-        if (!mBoardTexture.loadFromFile("board.png")) {
+        if (!mBoardTexture.loadFromFile("assets/board.png")) {
             std::cerr << "Failed to load board texture\n";
         }
         mBoardSprite.setTexture(mBoardTexture);
@@ -169,7 +169,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
     diceSprite.setPosition(windowWidth / 2 - diceSprite.getGlobalBounds().width / 2, windowHeight / 2 - diceSprite.getGlobalBounds().height / 2);
 
     sf::Font font;
-    font.loadFromFile("arial.ttf");
+    font.loadFromFile("assets/arial.ttf");
     sf::Text rollButton("Rzuc kostka", font, 30);
     rollButton.setPosition(windowWidth - 200, 50);
     rollButton.setFillColor(sf::Color::White);
@@ -300,14 +300,14 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
 
 void showMenu(sf::RenderWindow& window) {
     sf::Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile("background.png")) {
+    if (!backgroundTexture.loadFromFile("assets/background.png")) {
         std::cerr << "Failed to load background texture\n";
     }
     sf::Sprite backgroundSprite;
     backgroundSprite.setTexture(backgroundTexture);
 
     sf::Font font;
-    font.loadFromFile("arial.ttf");
+    font.loadFromFile("assets/arial.ttf");
 
     sf::Text title("Weze i drabiny", font, 50);
     title.setPosition(windowWidth / 2 - title.getGlobalBounds().width / 2, 20);
