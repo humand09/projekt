@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <map>
 
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
@@ -49,8 +50,10 @@ public:
         mShape.setPosition(0, 0);
     }
 
-    void draw(sf::RenderWindow& window) const {
-        window.draw(mShape);
+    void draw(sf::RenderWindow& window, const sf::Vector2f& offset) const {
+        sf::CircleShape shape = mShape; // Make a copy to avoid modifying the original position
+        shape.move(offset);
+        window.draw(shape);
     }
 
     void setPosition(int position) {
@@ -389,6 +392,11 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
         }
 
         std::string positions = "Player Positions:\n";
+        std::map<int, int> positionCount;
+        for (const auto& player : players) {
+            positionCount[player->getPosition()]++;
+        }
+
         for (const auto& player : players) {
             positions += player->getName() + ": " + std::to_string(player->getPosition()) + "\n";
         }
@@ -396,9 +404,18 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
 
         window.clear();
         board.draw(window);
+
+        std::map<int, int> drawnCount;
         for (const auto& player : players) {
-            player->draw(window);
+            int pos = player->getPosition();
+            sf::Vector2f offset(0.f, 0.f);
+            if (positionCount[pos] > 1) {
+                int count = drawnCount[pos]++;
+                offset = sf::Vector2f(count * 15.f, 0.f);
+            }
+            player->draw(window, offset);
         }
+
         window.draw(diceSprite);
         window.draw(rollButton);
         window.draw(stopButton);
