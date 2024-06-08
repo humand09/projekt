@@ -2,17 +2,27 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
-#include <iostream> // Dodano nagÅ‚Ã³wek <iostream>
+#include <iostream>
+#include <string>
 
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
+
+const int windowWidth = 1000;
+const int windowHeight = 600;
+const float initialSpeed = 500.0f;
+const float stopSpeed = 3.0f;
+const int boardSize = 100;
+
+sf::Texture diceTextures[6];
+std::string diceImageFiles[6] = { "1.png", "2.png", "3.png", "4.png", "5.png", "6.png" };
 
 class Player {
 public:
     Player(const sf::Color& color, const std::string& name) : mPosition(0), mName(name) {
         mShape.setRadius(10);
         mShape.setFillColor(color);
-        mShape.setPosition(0, 0); // PoczÄ…tkowa pozycja
+        mShape.setPosition(0, 0);
     }
 
     void draw(sf::RenderWindow& window) const {
@@ -21,8 +31,11 @@ public:
 
     void setPosition(int position) {
         mPosition = position;
-        int row = position / 10;
-        int col = position % 10;
+        if (mPosition >= boardSize - 1) {
+            mPosition = boardSize - 1;
+        }
+        int row = mPosition / 10;
+        int col = mPosition % 10;
         if (row % 2 == 0) {
             mShape.setPosition(col * 60, (9 - row) * 60);
         }
@@ -56,6 +69,7 @@ public:
     Snake(int start, int end) : mStart(start), mEnd(end) {}
     void triggerEvent(Player& player) override {
         player.setPosition(mEnd);
+        std::cout << player.getName() << " landed on a snake! Sliding down to " << mEnd << ".\n";
     }
 
 private:
@@ -68,6 +82,7 @@ public:
     Ladder(int start, int end) : mStart(start), mEnd(end) {}
     void triggerEvent(Player& player) override {
         player.setPosition(mEnd);
+        std::cout << player.getName() << " climbed a ladder! Moving up to " << mEnd << ".\n";
     }
 
 private:
@@ -79,9 +94,7 @@ class Bonus : public Square {
 public:
     Bonus(int position) : mPosition(position) {}
     void triggerEvent(Player& player) override {
-        player.setPosition(mPosition);
-        // Bonus effect: Allow an extra roll
-        std::cout << "Bonus! Double roll allowed.\n";
+        std::cout << player.getName() << " landed on a bonus! Double roll allowed.\n";
     }
 
 private:
@@ -91,185 +104,176 @@ private:
 class Board {
 public:
     Board() {
-        if (!mBoardTexture.loadFromFile("assets/board.png")) {
-            std::cerr << "Error loading board.png" << std::endl;
+        if (!mBoardTexture.loadFromFile("board.png")) {
+            std::cerr << "Failed to load board texture\n";
         }
         mBoardSprite.setTexture(mBoardTexture);
-        setupBoard();
+
+        mSquares.resize(boardSize, nullptr);
+        mSquares[16] = new Snake(16, 6);
+        mSquares[47] = new Ladder(47, 85);
+        mSquares[36] = new Bonus(58);
     }
 
     void draw(sf::RenderWindow& window) const {
         window.draw(mBoardSprite);
     }
 
-    void movePlayer(Player& player, int roll) {
-        int newPosition = player.getPosition() + roll;
-        if (newPosition >= 100) {
-            newPosition = 99;
+    void triggerEvent(Player& player) const {
+        if (mSquares[player.getPosition()]) {
+            mSquares[player.getPosition()]->triggerEvent(player);
         }
-        player.setPosition(newPosition);
-        if (mSquares[newPosition]) {
-            mSquares[newPosition]->triggerEvent(player);
+    }
+
+    ~Board() {
+        for (Square* square : mSquares) {
+            delete square;
         }
     }
 
 private:
-    void setupBoard() {
-        for (int i = 0; i < 100; ++i) {
-            mSquares.push_back(nullptr);
-        }
-        mSquares[16] = new Snake(16, 6);
-        mSquares[47] = new Ladder(47, 87);
-        mSquares[22] = new Bonus(22); // Example bonus
-        if (gameDifficulty == EASY) {
-            mSquares[30] = new Ladder(30, 50);
-        }
-        else if (gameDifficulty == MEDIUM) {
-            mSquares[30] = new Ladder(30, 40);
-            mSquares[70] = new Snake(70, 50);
-        }
-        else if (gameDifficulty == HARD) {
-            mSquares[10] = new Snake(10, 2);
-            mSquares[30] = new Snake(30, 5);
-            mSquares[60] = new Ladder(60, 80);
-        }
-    }
-
-    std::vector<Square*> mSquares;
     sf::Texture mBoardTexture;
     sf::Sprite mBoardSprite;
+    std::vector<Square*> mSquares;
 };
 
-class Game {
-public:
-    Game()
-        : mWindow(sf::VideoMode(800, 600), "WÄ™Å¼e i Drabiny"),
-        mCurrentPlayer(0), mIsDiceRolled(false), mDiceRoll(0), mIsMenu(true) {
-        if (!mFont.loadFromFile("assets/font.ttf")) {
-            std::cerr << "Error loading font.ttf" << std::endl;
-        }
-        mText.setFont(mFont);
-        mText.setCharacterSize(24);
-        mText.setFillColor(sf::Color::White);
-        mText.setPosition(650, 50);
-
-        mMenuText.setFont(mFont);
-        mMenuText.setCharacterSize(36);
-        mMenuText.setFillColor(sf::Color::White);
-        mMenuText.setPosition(150, 100);
-        mMenuText.setString("Press 1 for Easy, 2 for Medium, 3 for Hard");
-
-        mRollButton.setSize(sf::Vector2f(100, 50));
-        mRollButton.setFillColor(sf::Color::Yellow);
-        mRollButton.setPosition(650, 100);
-
-        mPlayers.push_back(Player(sf::Color::Red, "Player 1"));
-        mPlayers.push_back(Player(sf::Color::Blue, "Player 2"));
-        mPlayers.push_back(Player(sf::Color::Green, "Player 3"));
+void loadTextures() {
+    for (int i = 0; i < 6; ++i) {
+        diceTextures[i].loadFromFile(diceImageFiles[i]);
     }
+}
 
-    void run() {
-        while (mWindow.isOpen()) {
-            processEvents();
-            update();
-            render();
-        }
-    }
+int main() {
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Snakes and Ladders with Dice Simulation");
+    window.setFramerateLimit(60);
 
-private:
-    void processEvents() {
+    loadTextures();
+
+    sf::Sprite diceSprite;
+    diceSprite.setTexture(diceTextures[0]);
+    diceSprite.setPosition(windowWidth / 2 - diceSprite.getGlobalBounds().width / 2, windowHeight / 2 - diceSprite.getGlobalBounds().height / 2);
+
+    sf::Font font;
+    font.loadFromFile("arial.ttf");
+    sf::Text rollButton("Rzuæ kostk¹", font, 30);
+    rollButton.setPosition(windowWidth - 200, 50);
+
+    sf::Text stopButton("Stop", font, 30);
+    stopButton.setPosition(windowWidth - 200, 100);
+
+    sf::Text diceValue("", font, 30);
+    diceValue.setPosition(windowWidth - 200, 150);
+
+    sf::Text playerPositions("", font, 20);
+    playerPositions.setPosition(windowWidth - 200, 200);
+
+    Board board;
+    Player player1(sf::Color::Red, "Player 1");
+    Player player2(sf::Color::Blue, "Player 2");
+    Player player3(sf::Color::Green, "Player 3");
+
+    std::vector<Player*> players = { &player1, &player2, &player3 };
+    int currentPlayerIndex = 0;
+
+    bool isRolling = false;
+    float speed = initialSpeed;
+    sf::Vector2f direction(1.0f, 1.0f);
+    sf::Clock clock;
+    sf::Clock faceChangeClock;
+    int currentFace = 0;
+    int diceResult = 0;
+
+    srand(static_cast<unsigned int>(time(0)));
+
+    while (window.isOpen()) {
         sf::Event event;
-        while (mWindow.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                mWindow.close();
-            if (mIsMenu && event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Num1) {
-                    gameDifficulty = EASY;
-                    mIsMenu = false;
-                }
-                else if (event.key.code == sf::Keyboard::Num2) {
-                    gameDifficulty = MEDIUM;
-                    mIsMenu = false;
-                }
-                else if (event.key.code == sf::Keyboard::Num3) {
-                    gameDifficulty = HARD;
-                    mIsMenu = false;
-                }
-                if (!mIsMenu) {
-                    mBoard = Board();
-                }
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
             }
-            if (!mIsMenu && event.type == sf::Event::MouseButtonPressed) {
+            if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
-                    sf::Vector2i mousePos = sf::Mouse::getPosition(mWindow);
-                    if (mRollButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        rollDice();
+                    if (rollButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y) && !isRolling) {
+                        isRolling = true;
+                        speed = initialSpeed;
+                        direction.x = static_cast<float>(rand() % 200 - 100) / 100.0f;
+                        direction.y = static_cast<float>(rand() % 200 - 100) / 100.0f;
+                        faceChangeClock.restart();
+                        clock.restart();
+                        diceValue.setString("");
+                    }
+                    else if (stopButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y) && isRolling) {
+                        isRolling = false;
+                        diceSprite.setTexture(diceTextures[currentFace]);
+                        diceResult = currentFace + 1;
+                        Player* currentPlayer = players[currentPlayerIndex];
+                        currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
+                        board.triggerEvent(*currentPlayer);
+                        std::string imageName = diceImageFiles[currentFace].substr(0, diceImageFiles[currentFace].find(".png"));
+                        diceValue.setString("Wartoœæ: " + imageName);
+                        diceValue.setPosition(windowWidth - 200, 150);
+                        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
                     }
                 }
             }
         }
-    }
 
-    void update() {
-        if (mIsDiceRolled) {
-            mBoard.movePlayer(mPlayers[mCurrentPlayer], mDiceRoll);
-            mCurrentPlayer = (mCurrentPlayer + 1) % mPlayers.size();
-            mIsDiceRolled = false;
-        }
-    }
+        if (isRolling) {
+            float deltaTime = clock.restart().asSeconds();
+            diceSprite.move(direction * speed * deltaTime);
 
-    void render() {
-        mWindow.clear();
-
-        if (mIsMenu) {
-            mWindow.draw(mMenuText);
-        }
-        else {
-            mBoard.draw(mWindow);
-            for (const auto& player : mPlayers) {
-                player.draw(mWindow);
+            speed -= (static_cast<float>(rand() % 80 + 20)) * deltaTime;
+            if (speed <= 0) {
+                isRolling = false;
+                diceSprite.setTexture(diceTextures[currentFace]);
+                diceResult = currentFace + 1;
+                Player* currentPlayer = players[currentPlayerIndex];
+                currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
+                board.triggerEvent(*currentPlayer);
+                std::string imageName = diceImageFiles[currentFace].substr(0, diceImageFiles[currentFace].find(".png"));
+                diceValue.setString("Wartoœæ: " + imageName);
+                diceValue.setPosition(windowWidth - 200, 150);
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             }
-            mWindow.draw(mRollButton);
-            mWindow.draw(mText);
 
-            float yPosition = 200.0f;
-            for (const auto& player : mPlayers) {
-                sf::Text playerText;
-                playerText.setFont(mFont);
-                playerText.setCharacterSize(20);
-                playerText.setFillColor(sf::Color::White);
-                playerText.setPosition(650, yPosition);
-                playerText.setString(player.getName() + ": " + std::to_string(player.getPosition()));
-                mWindow.draw(playerText);
-                yPosition += 30.0f;
+            if (speed > stopSpeed) {
+                float faceChangeInterval = std::max(0.01f, 0.1f * (initialSpeed / speed)); // Faster speed results in shorter interval
+
+                if (faceChangeClock.getElapsedTime().asSeconds() >= faceChangeInterval) {
+                    currentFace = rand() % 6;
+                    diceSprite.setTexture(diceTextures[currentFace]);
+                    faceChangeClock.restart();
+                }
+            }
+
+            if (diceSprite.getPosition().x < 0 || diceSprite.getPosition().x + diceSprite.getGlobalBounds().width > windowWidth) {
+                direction.x = -direction.x;
+            }
+            if (diceSprite.getPosition().y < 0 || diceSprite.getPosition().y + diceSprite.getGlobalBounds().height > windowHeight) {
+                direction.y = -direction.y;
             }
         }
 
-        mWindow.display();
+        std::string positions = "Player Positions:\n";
+        for (const auto& player : players) {
+            positions += player->getName() + ": " + std::to_string(player->getPosition()) + "\n";
+        }
+        playerPositions.setString(positions);
+
+        window.clear();
+        board.draw(window);
+        player1.draw(window);
+        player2.draw(window);
+        player3.draw(window);
+        window.draw(diceSprite);
+        window.draw(rollButton);
+        window.draw(stopButton);
+        window.draw(playerPositions);
+        if (!isRolling && !diceValue.getString().isEmpty()) {
+            window.draw(diceValue);
+        }
+        window.display();
     }
 
-    void rollDice() {
-        mDiceRoll = rand() % 6 + 1;
-        mText.setString("Rolled: " + std::to_string(mDiceRoll));
-        mIsDiceRolled = true;
-    }
-
-    sf::RenderWindow mWindow;
-    Board mBoard;
-    std::vector<Player> mPlayers;
-    int mCurrentPlayer;
-    sf::Font mFont;
-    sf::Text mText;
-    sf::Text mMenuText;
-    sf::RectangleShape mRollButton;
-    bool mIsDiceRolled;
-    bool mIsMenu;
-    int mDiceRoll;
-};
-
-int main() {
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    Game game;
-    game.run();
     return 0;
 }
