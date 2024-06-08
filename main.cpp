@@ -8,6 +8,14 @@
 #include <fstream>
 #include <sstream>
 
+void printMousePosition(sf::RenderWindow& window) {
+    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+    std::cout << "Mouse Position: x = " << mousePos.x << ", y = " << mousePos.y << std::endl;
+}
+
+
+
+
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
 
@@ -50,7 +58,7 @@ public:
         : mPosition(0), mTargetPosition(0, 0), mMoving(false), mName(name) {
         mShape.setRadius(10);
         mShape.setFillColor(color);
-        mShape.setPosition(0, 0);
+        mShape.setPosition(10, 10); // Start at position 0
     }
 
     void draw(sf::RenderWindow& window, const sf::Vector2f& offset) const {
@@ -99,6 +107,12 @@ public:
 
     std::string getName() const {
         return mName;
+    }
+
+    void resetPosition() {
+        mPosition = 0;
+        mShape.setPosition(34, 540); // Reset position to 0
+        mTargetPosition = sf::Vector2f(33, 540); //Square 0 cords
     }
 
 private:
@@ -203,7 +217,7 @@ public:
         else {
             bonusSprite.setPosition((9 - col) * 60 + 10, (9 - row) * 60 + 10);
         }
-        sf::Vector2f targetPos(287, 282);
+        sf::Vector2f targetPos(290, 290); // ewentu 285 280
         sf::Vector2f currentPos = bonusSprite.getPosition();
         sf::Vector2f direction = targetPos - currentPos;
         float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -347,6 +361,10 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
     std::vector<Player*> players = { &player1, &player2, &player3, &player4 };
     players.resize(numPlayers);
 
+    for (auto& player : players) {
+        player->resetPosition(); // Teleport all players to position 0 at the start
+    }
+
     int currentPlayerIndex = 0;
 
     bool isRolling = false;
@@ -363,6 +381,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            //printMousePosition(window); //f dbg
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
