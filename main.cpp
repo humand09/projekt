@@ -159,7 +159,7 @@ public:
 
     void draw(sf::RenderWindow& window) const override {
         sf::Sprite bonusSprite(bonusTexture);
-        bonusSprite.setScale(0.3f, 0.3f); // Adjust the scale if needed
+        bonusSprite.setScale(0.3f, 0.3f);
         int row = mPosition / 10;
         int col = mPosition % 10;
         if (row % 2 == 0) {
@@ -424,15 +424,12 @@ void showMenu(sf::RenderWindow& window) {
 
     sf::Text easyOption("Latwy", font, 20);
     easyOption.setPosition(windowWidth / 2 - 100, 250);
-    easyOption.setFillColor(sf::Color::Black);
 
     sf::Text mediumOption("Sredni", font, 20);
     mediumOption.setPosition(windowWidth / 2 - 30, 250);
-    mediumOption.setFillColor(sf::Color::Black);
 
     sf::Text hardOption("Trudny", font, 20);
     hardOption.setPosition(windowWidth / 2 + 50, 250);
-    hardOption.setFillColor(sf::Color::Black);
 
     sf::Text playersText("Ilosc graczy", font, 20);
     playersText.setPosition(windowWidth / 2 - playersText.getGlobalBounds().width / 2, 300);
@@ -440,15 +437,12 @@ void showMenu(sf::RenderWindow& window) {
 
     sf::Text twoPlayers("2", font, 20);
     twoPlayers.setPosition(windowWidth / 2 - 60, 350);
-    twoPlayers.setFillColor(sf::Color::Black);
 
     sf::Text threePlayers("3", font, 20);
     threePlayers.setPosition(windowWidth / 2 - 20, 350);
-    threePlayers.setFillColor(sf::Color::Black);
 
     sf::Text fourPlayers("4", font, 20);
     fourPlayers.setPosition(windowWidth / 2 + 20, 350);
-    fourPlayers.setFillColor(sf::Color::Black);
 
     Difficulty selectedDifficulty = EASY;
     int selectedPlayers = 2;
@@ -487,6 +481,13 @@ void showMenu(sf::RenderWindow& window) {
                 }
             }
         }
+
+        easyOption.setFillColor(selectedDifficulty == EASY ? sf::Color::Red : sf::Color::Black);
+        mediumOption.setFillColor(selectedDifficulty == MEDIUM ? sf::Color::Red : sf::Color::Black);
+        hardOption.setFillColor(selectedDifficulty == HARD ? sf::Color::Red : sf::Color::Black);
+        twoPlayers.setFillColor(selectedPlayers == 2 ? sf::Color::Red : sf::Color::Black);
+        threePlayers.setFillColor(selectedPlayers == 3 ? sf::Color::Red : sf::Color::Black);
+        fourPlayers.setFillColor(selectedPlayers == 4 ? sf::Color::Red : sf::Color::Black);
 
         window.clear();
         window.draw(backgroundSprite);
