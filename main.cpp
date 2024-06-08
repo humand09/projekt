@@ -9,7 +9,7 @@ enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
 
 const int windowWidth = 1000;
-const int windowHeight = 600;
+const int windowHeight = 560;
 const float initialSpeed = 500.0f;
 const float stopSpeed = 3.0f;
 const int boardSize = 100;
@@ -60,14 +60,14 @@ private:
 
 class Square {
 public:
-    virtual void triggerEvent(Player& player) = 0;
+    virtual void triggerEvent(Player& player, int& diceResult, bool& extraRoll) = 0;
     virtual ~Square() {}
 };
 
 class Snake : public Square {
 public:
     Snake(int start, int end) : mStart(start), mEnd(end) {}
-    void triggerEvent(Player& player) override {
+    void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         player.setPosition(mEnd);
         std::cout << player.getName() << " landed on a snake! Sliding down to " << mEnd << ".\n";
     }
@@ -80,7 +80,7 @@ private:
 class Ladder : public Square {
 public:
     Ladder(int start, int end) : mStart(start), mEnd(end) {}
-    void triggerEvent(Player& player) override {
+    void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         player.setPosition(mEnd);
         std::cout << player.getName() << " climbed a ladder! Moving up to " << mEnd << ".\n";
     }
@@ -93,8 +93,9 @@ private:
 class Bonus : public Square {
 public:
     Bonus(int position) : mPosition(position) {}
-    void triggerEvent(Player& player) override {
+    void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         std::cout << player.getName() << " landed on a bonus! Double roll allowed.\n";
+        extraRoll = true;
     }
 
 private:
@@ -137,9 +138,9 @@ public:
         window.draw(mBoardSprite);
     }
 
-    void triggerEvent(Player& player) const {
+    void triggerEvent(Player& player, int& diceResult, bool& extraRoll) const {
         if (mSquares[player.getPosition()]) {
-            mSquares[player.getPosition()]->triggerEvent(player);
+            mSquares[player.getPosition()]->triggerEvent(player, diceResult, extraRoll);
         }
     }
 
@@ -198,6 +199,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
     int currentPlayerIndex = 0;
 
     bool isRolling = false;
+    bool extraRoll = false;
     float speed = initialSpeed;
     sf::Vector2f direction(1.0f, 1.0f);
     sf::Clock clock;
@@ -230,14 +232,19 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
                         diceResult = currentFace + 1;
                         Player* currentPlayer = players[currentPlayerIndex];
                         currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
-                        board.triggerEvent(*currentPlayer);
+                        board.triggerEvent(*currentPlayer, diceResult, extraRoll);
                         std::string imageName = diceImageFiles[currentFace];
                         std::size_t startPos = imageName.find("assets/") + 7;
                         std::size_t endPos = imageName.find(".png");
                         imageName = imageName.substr(startPos, endPos - startPos);
                         diceValue.setString("Wartosc: " + imageName);
                         diceValue.setPosition(windowWidth - 200, 150);
-                        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+                        if (!extraRoll) {
+                            currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+                        }
+                        else {
+                            extraRoll = false;
+                        }
                     }
                 }
             }
@@ -254,14 +261,19 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
                 diceResult = currentFace + 1;
                 Player* currentPlayer = players[currentPlayerIndex];
                 currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
-                board.triggerEvent(*currentPlayer);
+                board.triggerEvent(*currentPlayer, diceResult, extraRoll);
                 std::string imageName = diceImageFiles[currentFace];
                 std::size_t startPos = imageName.find("assets/") + 7;
                 std::size_t endPos = imageName.find(".png");
                 imageName = imageName.substr(startPos, endPos - startPos);
                 diceValue.setString("Wartosc: " + imageName);
                 diceValue.setPosition(windowWidth - 200, 150);
-                currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+                if (!extraRoll) {
+                    currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+                }
+                else {
+                    extraRoll = false;
+                }
             }
 
             if (speed > stopSpeed) {
