@@ -53,7 +53,7 @@ public:
     }
 
     void draw(sf::RenderWindow& window, const sf::Vector2f& offset) const {
-        sf::CircleShape shape = mShape; 
+        sf::CircleShape shape = mShape;
         shape.move(offset);
         window.draw(shape);
     }
@@ -96,7 +96,10 @@ public:
 
 class Snake : public Square {
 public:
-    Snake(int start, int end) : mStart(start), mEnd(end) {}
+    Snake(int start, int end) : mStart(start), mEnd(end) {
+        int textureIndex = rand() % 3;
+        mTextureFile = "assets/snake" + std::to_string(textureIndex + 1) + ".png";
+    }
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         player.setPosition(mEnd);
         std::cout << player.getName() << " landed on a snake! Sliding down to " << mEnd << ".\n";
@@ -105,12 +108,13 @@ public:
     void draw(sf::RenderWindow& window) const override {
         sf::Vector2f topLeft = getPosition(mStart);
         sf::Vector2f bottomRight = getPosition(mEnd);
-        drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, "assets/snake1.png");
+        drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, mTextureFile);
     }
 
 private:
     int mStart;
     int mEnd;
+    std::string mTextureFile;
 
     sf::Vector2f getPosition(int squareIndex) const {
         int row = squareIndex / 10;
@@ -126,7 +130,10 @@ private:
 
 class Ladder : public Square {
 public:
-    Ladder(int start, int end) : mStart(start), mEnd(end) {}
+    Ladder(int start, int end) : mStart(start), mEnd(end) {
+        int textureIndex = rand() % 3;
+        mTextureFile = "assets/ladder" + std::to_string(textureIndex + 1) + ".png";
+    }
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         player.setPosition(mEnd);
         std::cout << player.getName() << " climbed a ladder! Moving up to " << mEnd << ".\n";
@@ -135,12 +142,13 @@ public:
     void draw(sf::RenderWindow& window) const override {
         sf::Vector2f topLeft = getPosition(mStart);
         sf::Vector2f bottomRight = getPosition(mEnd);
-        drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, "assets/ladder1.png");
+        drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, mTextureFile);
     }
 
 private:
     int mStart;
     int mEnd;
+    std::string mTextureFile;
 
     sf::Vector2f getPosition(int squareIndex) const {
         int row = squareIndex / 10;
