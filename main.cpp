@@ -46,7 +46,8 @@ void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vec
 
 class Player {
 public:
-    Player(const sf::Color& color, const std::string& name) : mPosition(0), mName(name) {
+    Player(const sf::Color& color, const std::string& name)
+        : mPosition(0), mTargetPosition(0, 0), mMoving(false), mName(name) {
         mShape.setRadius(10);
         mShape.setFillColor(color);
         mShape.setPosition(0, 0);
@@ -58,7 +59,7 @@ public:
         window.draw(shape);
     }
 
-    void setPosition(int position) {
+    void moveToPosition(int position) {
         mPosition = position;
         if (mPosition >= boardSize - 1) {
             mPosition = boardSize - 1;
@@ -66,20 +67,29 @@ public:
         int row = mPosition / 10;
         int col = mPosition % 10;
         if (row % 2 == 0) {
-            mShape.setPosition(col * 60 + 10, (9 - row) * 60 + 10);
+            mTargetPosition = sf::Vector2f(col * 60 + 10, (9 - row) * 60 + 10);
         }
         else {
-            mShape.setPosition((9 - col) * 60 + 10, (9 - row) * 60 + 10);
+            mTargetPosition = sf::Vector2f((9 - col) * 60 + 10, (9 - row) * 60 + 10);
         }
+        mMoving = true;
+    }
 
-        sf::Vector2f center(285.f, 280.f);
-        sf::Vector2f currentPosition = mShape.getPosition();
-        sf::Vector2f direction = center - currentPosition;
-        float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-        if (length > 0) {
-            direction /= length;
+    void update(float deltaTime) {
+        if (mMoving) {
+            sf::Vector2f currentPosition = mShape.getPosition();
+            sf::Vector2f direction = mTargetPosition - currentPosition;
+            float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+            if (distance < 1.0f) {
+                mShape.setPosition(mTargetPosition);
+                mMoving = false;
+            }
+            else {
+                direction /= distance; // Normalize the direction vector
+                mShape.move(direction * 100.0f * deltaTime); // Move by 100 units per second
+            }
         }
-        mShape.move(direction * 10.f);
     }
 
     int getPosition() const {
@@ -92,6 +102,8 @@ public:
 
 private:
     sf::CircleShape mShape;
+    sf::Vector2f mTargetPosition;
+    bool mMoving;
     int mPosition;
     std::string mName;
 };
@@ -110,7 +122,7 @@ public:
         mTextureFile = "assets/snake" + std::to_string(textureIndex + 1) + ".png";
     }
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
-        player.setPosition(mEnd);
+        player.moveToPosition(mEnd);
         std::cout << player.getName() << " landed on a snake! Sliding down to " << mEnd << ".\n";
     }
 
@@ -144,7 +156,7 @@ public:
         mTextureFile = "assets/ladder" + std::to_string(textureIndex + 1) + ".png";
     }
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
-        player.setPosition(mEnd);
+        player.moveToPosition(mEnd);
         std::cout << player.getName() << " climbed a ladder! Moving up to " << mEnd << ".\n";
     }
 
@@ -369,7 +381,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
                         diceSprite.setTexture(diceTextures[currentFace]);
                         diceResult = currentFace + 1;
                         Player* currentPlayer = players[currentPlayerIndex];
-                        currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
+                        currentPlayer->moveToPosition(currentPlayer->getPosition() + diceResult);
                         board.triggerEvent(*currentPlayer, diceResult, extraRoll);
                         std::string imageName = diceImageFiles[currentFace];
                         std::size_t startPos = imageName.find("assets/") + 7;
@@ -398,7 +410,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
                 diceSprite.setTexture(diceTextures[currentFace]);
                 diceResult = currentFace + 1;
                 Player* currentPlayer = players[currentPlayerIndex];
-                currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
+                currentPlayer->moveToPosition(currentPlayer->getPosition() + diceResult);
                 board.triggerEvent(*currentPlayer, diceResult, extraRoll);
                 std::string imageName = diceImageFiles[currentFace];
                 std::size_t startPos = imageName.find("assets/") + 7;
@@ -430,6 +442,11 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
             if (diceSprite.getPosition().y < 0 || diceSprite.getPosition().y + diceSprite.getGlobalBounds().height > windowHeight) {
                 direction.y = -direction.y;
             }
+        }
+
+        float deltaTime = clock.restart().asSeconds();
+        for (auto& player : players) {
+            player->update(deltaTime);
         }
 
         std::string positions = "Player Positions:\n";
