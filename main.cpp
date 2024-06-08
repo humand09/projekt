@@ -16,6 +16,7 @@ const int boardSize = 100;
 
 sf::Texture diceTextures[6];
 std::string diceImageFiles[6] = { "assets/1.png", "assets/2.png", "assets/3.png", "assets/4.png", "assets/5.png", "assets/6.png" };
+sf::Texture bonusTexture;
 
 void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vector2f& topLeft, const sf::Vector2f& bottomRight, const std::string& textureFile) {
     sf::Texture texture;
@@ -27,7 +28,7 @@ void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vec
     float width = 50;
 
     sf::RectangleShape rectangle(sf::Vector2f(length, width));
-    rectangle.setPosition(topLeft);
+    rectangle.setPosition(topLeft.x + 10, topLeft.y + 10);
     rectangle.setTexture(&texture);
 
     float dx = bottomRight.x - topLeft.x;
@@ -60,10 +61,10 @@ public:
         int row = mPosition / 10;
         int col = mPosition % 10;
         if (row % 2 == 0) {
-            mShape.setPosition(col * 60, (9 - row) * 60);
+            mShape.setPosition(col * 60 + 10, (9 - row) * 60 + 10);
         }
         else {
-            mShape.setPosition((9 - col) * 60, (9 - row) * 60);
+            mShape.setPosition((9 - col) * 60 + 10, (9 - row) * 60 + 10);
         }
     }
 
@@ -157,7 +158,17 @@ public:
     }
 
     void draw(sf::RenderWindow& window) const override {
-        // Drawing logic for Bonus can be added here if needed
+        sf::Sprite bonusSprite(bonusTexture);
+        bonusSprite.setScale(0.3f, 0.3f); // Adjust the scale if needed
+        int row = mPosition / 10;
+        int col = mPosition % 10;
+        if (row % 2 == 0) {
+            bonusSprite.setPosition(col * 60 + 10, (9 - row) * 60 + 10);
+        }
+        else {
+            bonusSprite.setPosition((9 - col) * 60 + 10, (9 - row) * 60 + 10);
+        }
+        window.draw(bonusSprite);
     }
 
 private:
@@ -171,18 +182,19 @@ public:
             std::cerr << "Failed to load board texture\n";
         }
         mBoardSprite.setTexture(mBoardTexture);
+        mBoardSprite.setPosition(10, 10);
 
         mSquares.resize(boardSize, nullptr);
         if (difficulty == EASY) {
             mSquares[16] = new Ladder(16, 26);
             mSquares[47] = new Ladder(47, 85);
-            mSquares[36] = new Bonus(58);
+            mSquares[36] = new Bonus(36);
             mSquares[62] = new Snake(62, 19);
         }
         else if (difficulty == MEDIUM) {
             mSquares[16] = new Ladder(16, 26);
             mSquares[47] = new Ladder(47, 85);
-            mSquares[36] = new Bonus(58);
+            mSquares[36] = new Bonus(36);
             mSquares[62] = new Snake(62, 19);
             mSquares[89] = new Snake(89, 70);
         }
@@ -190,7 +202,7 @@ public:
             mSquares[16] = new Ladder(16, 26);
             mSquares[47] = new Ladder(47, 85);
             mSquares[4] = new Ladder(4, 8);
-            mSquares[36] = new Bonus(58);
+            mSquares[36] = new Bonus(36);
             mSquares[16] = new Snake(16, 2);
             mSquares[8] = new Snake(8, 5);
             mSquares[95] = new Snake(95, 56);
@@ -227,6 +239,9 @@ private:
 void loadTextures() {
     for (int i = 0; i < 6; ++i) {
         diceTextures[i].loadFromFile(diceImageFiles[i]);
+    }
+    if (!bonusTexture.loadFromFile("assets/extraroll.png")) {
+        std::cerr << "Failed to load bonus texture\n";
     }
 }
 
