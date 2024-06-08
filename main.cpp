@@ -97,12 +97,25 @@ public:
     }
 
     void draw(sf::RenderWindow& window) const override {
-        // snake
+        sf::Vector2f topLeft = getPosition(mStart);
+        sf::Vector2f bottomRight = getPosition(mEnd);
+        drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, "assets/snake1.png");
     }
 
 private:
     int mStart;
     int mEnd;
+
+    sf::Vector2f getPosition(int squareIndex) const {
+        int row = squareIndex / 10;
+        int col = squareIndex % 10;
+        if (row % 2 == 0) {
+            return sf::Vector2f(col * 60, (9 - row) * 60);
+        }
+        else {
+            return sf::Vector2f((9 - col) * 60, (9 - row) * 60);
+        }
+    }
 };
 
 class Ladder : public Square {
@@ -144,7 +157,7 @@ public:
     }
 
     void draw(sf::RenderWindow& window) const override {
-        // bonus
+        // Drawing logic for Bonus can be added here if needed
     }
 
 private:
@@ -176,13 +189,10 @@ public:
         else if (difficulty == HARD) {
             mSquares[16] = new Ladder(16, 26);
             mSquares[47] = new Ladder(47, 85);
-            mSquares[4] = new Ladder(4, 8);  // Poprawna pozycja dla trzeciej drabiny
+            mSquares[4] = new Ladder(4, 8);
             mSquares[36] = new Bonus(58);
-            mSquares[3] = new Bonus(58);
-            mSquares[6] = new Bonus(58);
-            mSquares[5] = new Bonus(58);
-            mSquares[62] = new Snake(62, 19);
-            mSquares[89] = new Snake(89, 70);
+            mSquares[16] = new Snake(16, 2);
+            mSquares[8] = new Snake(8, 5);
             mSquares[95] = new Snake(95, 56);
         }
     }
