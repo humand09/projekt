@@ -38,17 +38,6 @@ void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vec
     rectangle.setRotation(angle);
 
     window.draw(rectangle);
-
-    sf::CircleShape startPoint(5);
-    startPoint.setFillColor(sf::Color::Red);
-    startPoint.setPosition(topLeft.x - startPoint.getRadius(), topLeft.y - startPoint.getRadius());
-
-    sf::CircleShape endPoint(5);
-    endPoint.setFillColor(sf::Color::Red);
-    endPoint.setPosition(bottomRight.x - endPoint.getRadius(), bottomRight.y - endPoint.getRadius());
-
-    window.draw(startPoint);
-    window.draw(endPoint);
 }
 
 class Player {
