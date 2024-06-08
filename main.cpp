@@ -9,13 +9,47 @@ enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
 
 const int windowWidth = 1000;
-const int windowHeight = 560;
+const int windowHeight = 600;
 const float initialSpeed = 500.0f;
 const float stopSpeed = 3.0f;
 const int boardSize = 100;
 
 sf::Texture diceTextures[6];
 std::string diceImageFiles[6] = { "assets/1.png", "assets/2.png", "assets/3.png", "assets/4.png", "assets/5.png", "assets/6.png" };
+
+void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vector2f& topLeft, const sf::Vector2f& bottomRight, const std::string& textureFile) {
+    sf::Texture texture;
+    if (!texture.loadFromFile(textureFile)) {
+        return;
+    }
+
+    float length = std::sqrt(std::pow(bottomRight.x - topLeft.x, 2) + std::pow(bottomRight.y - topLeft.y, 2));
+    float width = 50;
+
+    sf::RectangleShape rectangle(sf::Vector2f(length, width));
+    rectangle.setPosition(topLeft);
+    rectangle.setTexture(&texture);
+
+    float dx = bottomRight.x - topLeft.x;
+    float dy = bottomRight.y - topLeft.y;
+    float angle = std::atan2(dy, dx) * 180 / 3.14159f;
+
+    rectangle.setOrigin(0, width / 2);
+    rectangle.setRotation(angle);
+
+    window.draw(rectangle);
+
+    sf::CircleShape startPoint(5);
+    startPoint.setFillColor(sf::Color::Red);
+    startPoint.setPosition(topLeft.x - startPoint.getRadius(), topLeft.y - startPoint.getRadius());
+
+    sf::CircleShape endPoint(5);
+    endPoint.setFillColor(sf::Color::Red);
+    endPoint.setPosition(bottomRight.x - endPoint.getRadius(), bottomRight.y - endPoint.getRadius());
+
+    window.draw(startPoint);
+    window.draw(endPoint);
+}
 
 class Player {
 public:
@@ -61,6 +95,7 @@ private:
 class Square {
 public:
     virtual void triggerEvent(Player& player, int& diceResult, bool& extraRoll) = 0;
+    virtual void draw(sf::RenderWindow& window) const = 0;
     virtual ~Square() {}
 };
 
@@ -70,6 +105,10 @@ public:
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         player.setPosition(mEnd);
         std::cout << player.getName() << " landed on a snake! Sliding down to " << mEnd << ".\n";
+    }
+
+    void draw(sf::RenderWindow& window) const override {
+        // snake
     }
 
 private:
@@ -85,9 +124,26 @@ public:
         std::cout << player.getName() << " climbed a ladder! Moving up to " << mEnd << ".\n";
     }
 
+    void draw(sf::RenderWindow& window) const override {
+        sf::Vector2f topLeft = getPosition(mStart);
+        sf::Vector2f bottomRight = getPosition(mEnd);
+        drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, "assets/ladder1.png");
+    }
+
 private:
     int mStart;
     int mEnd;
+
+    sf::Vector2f getPosition(int squareIndex) const {
+        int row = squareIndex / 10;
+        int col = squareIndex % 10;
+        if (row % 2 == 0) {
+            return sf::Vector2f(col * 60, (9 - row) * 60);
+        }
+        else {
+            return sf::Vector2f((9 - col) * 60, (9 - row) * 60);
+        }
+    }
 };
 
 class Bonus : public Square {
@@ -96,6 +152,10 @@ public:
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         std::cout << player.getName() << " landed on a bonus! Double roll allowed.\n";
         extraRoll = true;
+    }
+
+    void draw(sf::RenderWindow& window) const override {
+        // bonus
     }
 
 private:
@@ -127,7 +187,11 @@ public:
         else if (difficulty == HARD) {
             mSquares[16] = new Ladder(16, 26);
             mSquares[47] = new Ladder(47, 85);
+            mSquares[4] = new Ladder(4, 8);  // Poprawna pozycja dla trzeciej drabiny
             mSquares[36] = new Bonus(58);
+            mSquares[3] = new Bonus(58);
+            mSquares[6] = new Bonus(58);
+            mSquares[5] = new Bonus(58);
             mSquares[62] = new Snake(62, 19);
             mSquares[89] = new Snake(89, 70);
             mSquares[95] = new Snake(95, 56);
@@ -136,6 +200,11 @@ public:
 
     void draw(sf::RenderWindow& window) const {
         window.draw(mBoardSprite);
+        for (const auto& square : mSquares) {
+            if (square) {
+                square->draw(window);
+            }
+        }
     }
 
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) const {
