@@ -1,0 +1,5 @@
+Gracze rzucaja koscmi i poruszaja sie o tyle pol, ile wypadnie.
+Jesli gracz wejdzie na pole z glowa weza spada na jego koniec.
+Jesli wejdzie na pole u dolu drabiny wspina sie na jej gore.
+Wygrywa sie dochodzac do ostatniego miejsca planszy.
+Pole bonus umozliwia ponowny rzut kostka.
