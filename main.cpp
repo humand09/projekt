@@ -159,7 +159,7 @@ public:
 
     void draw(sf::RenderWindow& window) const override {
         sf::Sprite bonusSprite(bonusTexture);
-        bonusSprite.setScale(0.3f, 0.3f);
+        bonusSprite.setScale(0.04f, 0.04f); // skala
         int row = mPosition / 10;
         int col = mPosition % 10;
         if (row % 2 == 0) {
@@ -167,6 +167,17 @@ public:
         }
         else {
             bonusSprite.setPosition((9 - col) * 60 + 10, (9 - row) * 60 + 10);
+        }
+        sf::Vector2f targetPos(287, 282);
+        sf::Vector2f currentPos = bonusSprite.getPosition();
+        sf::Vector2f direction = targetPos - currentPos;
+        float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+        if (length > 10) {
+            direction.x /= length;
+            direction.y /= length;
+            sf::Vector2f moveVector(direction.x * 10, direction.y * 10); // Sskalowanie dziala
+            bonusSprite.move(moveVector);
         }
         window.draw(bonusSprite);
     }
