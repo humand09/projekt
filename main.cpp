@@ -159,7 +159,7 @@ public:
 
     void draw(sf::RenderWindow& window) const override {
         sf::Sprite bonusSprite(bonusTexture);
-        bonusSprite.setScale(0.04f, 0.04f); // skala
+        bonusSprite.setScale(0.04f, 0.04f);
         int row = mPosition / 10;
         int col = mPosition % 10;
         if (row % 2 == 0) {
@@ -176,7 +176,7 @@ public:
         if (length > 10) {
             direction.x /= length;
             direction.y /= length;
-            sf::Vector2f moveVector(direction.x * 10, direction.y * 10); // Sskalowanie dziala
+            sf::Vector2f moveVector(direction.x * 10, direction.y * 10);
             bonusSprite.move(moveVector);
         }
         window.draw(bonusSprite);
@@ -410,6 +410,45 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
     }
 }
 
+void showRules(sf::RenderWindow& window, sf::Font& font) {
+    sf::Text rulesText(
+        "Gracze rzucaja koscmi i poruszaja sie o tyle pol, ile wypadnie.\n"
+        "Jesli gracz wejdzie na pole z glowa weza spada na jego koniec.\n"
+        "Jesli wejdzie na pole u dolu drabiny wspina sie na jej gore.\n"
+        "Wygrywa sie dochodzac do ostatniego miejsca planszy.\n"
+        "Pole bonus umozliwia ponowny rzut kostka.",
+        font, 20);
+    rulesText.setPosition(50, 100);
+    rulesText.setFillColor(sf::Color::Black);
+
+    sf::Text backButton("Powrot do menu", font, 30);
+    backButton.setPosition(windowWidth / 2 - backButton.getGlobalBounds().width / 2, windowHeight - 100);
+    backButton.setFillColor(sf::Color::White);
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+                    if (backButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        window.clear(sf::Color::White);
+        window.draw(rulesText);
+        window.draw(backButton);
+        window.display();
+    }
+}
+
 void showMenu(sf::RenderWindow& window) {
     sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("assets/background.png")) {
@@ -428,6 +467,10 @@ void showMenu(sf::RenderWindow& window) {
     sf::Text newGameButton("Nowa gra", font, 30);
     newGameButton.setPosition(windowWidth / 2 - newGameButton.getGlobalBounds().width / 2, 100);
     newGameButton.setFillColor(sf::Color::Black);
+
+    sf::Text rulesButton("Zasady", font, 30);
+    rulesButton.setPosition(windowWidth / 2 - rulesButton.getGlobalBounds().width / 2, 150);
+    rulesButton.setFillColor(sf::Color::Black);
 
     sf::Text difficultyText("Wybor trudnosci:", font, 20);
     difficultyText.setPosition(windowWidth / 2 - difficultyText.getGlobalBounds().width / 2, 200);
@@ -471,6 +514,9 @@ void showMenu(sf::RenderWindow& window) {
                     if (newGameButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                         startGame(window, selectedDifficulty, selectedPlayers);
                     }
+                    else if (rulesButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        showRules(window, font);
+                    }
                     else if (easyOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                         selectedDifficulty = EASY;
                     }
@@ -504,6 +550,7 @@ void showMenu(sf::RenderWindow& window) {
         window.draw(backgroundSprite);
         window.draw(title);
         window.draw(newGameButton);
+        window.draw(rulesButton);
         window.draw(difficultyText);
         window.draw(easyOption);
         window.draw(mediumOption);
