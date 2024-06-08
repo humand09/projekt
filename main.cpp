@@ -231,7 +231,10 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
                         Player* currentPlayer = players[currentPlayerIndex];
                         currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
                         board.triggerEvent(*currentPlayer);
-                        std::string imageName = diceImageFiles[currentFace].substr(0, diceImageFiles[currentFace].find(".png"));
+                        std::string imageName = diceImageFiles[currentFace];
+                        std::size_t startPos = imageName.find("assets/") + 7;
+                        std::size_t endPos = imageName.find(".png");
+                        imageName = imageName.substr(startPos, endPos - startPos);
                         diceValue.setString("Wartosc: " + imageName);
                         diceValue.setPosition(windowWidth - 200, 150);
                         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
@@ -252,7 +255,10 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
                 Player* currentPlayer = players[currentPlayerIndex];
                 currentPlayer->setPosition(currentPlayer->getPosition() + diceResult);
                 board.triggerEvent(*currentPlayer);
-                std::string imageName = diceImageFiles[currentFace].substr(0, diceImageFiles[currentFace].find(".png"));
+                std::string imageName = diceImageFiles[currentFace];
+                std::size_t startPos = imageName.find("assets/") + 7;
+                std::size_t endPos = imageName.find(".png");
+                imageName = imageName.substr(startPos, endPos - startPos);
                 diceValue.setString("Wartosc: " + imageName);
                 diceValue.setPosition(windowWidth - 200, 150);
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
