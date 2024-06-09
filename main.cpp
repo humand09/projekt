@@ -36,6 +36,14 @@ sf::Sound ladderKnockSound;
 sf::Sound clickInGameSound;
 sf::Sound diceStartSound;
 
+sf::Vector2f adjustPosition(const sf::Vector2f& originalPosition, const sf::Vector2f& target, float offset) {
+    sf::Vector2f direction = target - originalPosition;
+    float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+    direction /= length;
+    return originalPosition + direction * offset;
+}
+
+
 void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vector2f& topLeft, const sf::Vector2f& bottomRight, const std::string& textureFile) {
     sf::Texture texture;
     if (!texture.loadFromFile(textureFile)) {
@@ -150,10 +158,11 @@ public:
     }
 
     void draw(sf::RenderWindow& window) const override {
-        sf::Vector2f topLeft = getPosition(mStart);
-        sf::Vector2f bottomRight = getPosition(mEnd);
+        sf::Vector2f topLeft = adjustPosition(getPosition(mStart), sf::Vector2f(290, 290), 6);
+        sf::Vector2f bottomRight = adjustPosition(getPosition(mEnd), sf::Vector2f(290, 290), 6);
         drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, mTextureFile);
     }
+
 
 private:
     int mStart;
@@ -185,10 +194,11 @@ public:
     }
 
     void draw(sf::RenderWindow& window) const override {
-        sf::Vector2f topLeft = getPosition(mStart);
-        sf::Vector2f bottomRight = getPosition(mEnd);
+        sf::Vector2f topLeft = adjustPosition(getPosition(mStart), sf::Vector2f(290, 290), 14);
+        sf::Vector2f bottomRight = adjustPosition(getPosition(mEnd), sf::Vector2f(290, 290), 14);
         drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, mTextureFile);
     }
+
 
 private:
     int mStart;
@@ -348,7 +358,7 @@ void loadTextures() {
     else {
         logoSprite.setTexture(logoTexture);
         logoSprite.setPosition(604, 338);
-        logoSprite.setScale(0.38f, 0.27f); // Scale down to 50%
+        logoSprite.setScale(0.38f, 0.27f);
     }
 }
 
