@@ -348,7 +348,7 @@ void loadTextures() {
     else {
         logoSprite.setTexture(logoTexture);
         logoSprite.setPosition(604, 338);
-        logoSprite.setScale(0.5f, 0.5f); // Adjust scale as needed
+        logoSprite.setScale(0.38f, 0.27f); // Scale down to 50%
     }
 }
 
@@ -552,11 +552,11 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, 
             player->draw(window, offset);
         }
 
-        window.draw(diceSprite);
+        window.draw(logoSprite);
         window.draw(rollButton);
         window.draw(stopButton);
         window.draw(playerPositions);
-        window.draw(logoSprite);
+        window.draw(diceSprite);
         if (!isRolling && !diceValue.getString().isEmpty()) {
             window.draw(diceValue);
         }
