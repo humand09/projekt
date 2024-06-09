@@ -235,8 +235,8 @@ private:
 
 class Board {
 public:
-    Board(Difficulty difficulty) {
-        if (!mBoardTexture.loadFromFile("assets/board.png")) {
+    Board(Difficulty difficulty, const std::string& textureFile) {
+        if (!mBoardTexture.loadFromFile(textureFile)) {
             std::cerr << "Failed to load board texture\n";
         }
         mBoardSprite.setTexture(mBoardTexture);
@@ -259,6 +259,13 @@ public:
         if (mSquares[player.getPosition()]) {
             mSquares[player.getPosition()]->triggerEvent(player, diceResult, extraRoll);
         }
+    }
+
+    void setBoardTexture(const std::string& textureFile) {
+        if (!mBoardTexture.loadFromFile(textureFile)) {
+            std::cerr << "Failed to load board texture: " << textureFile << "\n";
+        }
+        mBoardSprite.setTexture(mBoardTexture);
     }
 
     ~Board() {
@@ -325,7 +332,7 @@ void loadTextures() {
     }
 }
 
-void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, sf::Music& music) {
+void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, sf::Music& music, const std::string& boardTexture) {
     loadTextures();
 
     sf::Sprite diceSprite;
@@ -350,7 +357,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, 
     playerPositions.setPosition(windowWidth - 200, 200);
     playerPositions.setFillColor(sf::Color::White);
 
-    Board board(difficulty);
+    Board board(difficulty, boardTexture);
     Player player1(sf::Color::Red, "Player 1");
     Player player2(sf::Color::Blue, "Player 2");
     Player player3(sf::Color::Green, "Player 3");
@@ -582,7 +589,7 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
     difficultyText.setFillColor(sf::Color::Black);
 
     sf::Text easyOption("Latwy", font, 20);
-    easyOption.setPosition(windowWidth / 2 - 100, 250);
+    easyOption.setPosition(windowWidth / 2 - 110, 250);
 
     sf::Text mediumOption("Sredni", font, 20);
     mediumOption.setPosition(windowWidth / 2 - 30, 250);
@@ -595,16 +602,27 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
     playersText.setFillColor(sf::Color::Black);
 
     sf::Text twoPlayers("2", font, 20);
-    twoPlayers.setPosition(windowWidth / 2 - 60, 350);
+    twoPlayers.setPosition(windowWidth / 2 - 50, 350);
 
     sf::Text threePlayers("3", font, 20);
-    threePlayers.setPosition(windowWidth / 2 - 20, 350);
+    threePlayers.setPosition(windowWidth / 2 - 10, 350);
 
     sf::Text fourPlayers("4", font, 20);
-    fourPlayers.setPosition(windowWidth / 2 + 20, 350);
+    fourPlayers.setPosition(windowWidth / 2 + 30, 350);
+
+    sf::Text boardColorText("Kolor Planszy", font, 20);
+    boardColorText.setPosition(windowWidth / 2 - boardColorText.getGlobalBounds().width / 2, 400);
+    boardColorText.setFillColor(sf::Color::Black);
+
+    sf::Text lightBoardOption("Jasny", font, 20);
+    lightBoardOption.setPosition(windowWidth / 2 - 60, 450);
+
+    sf::Text darkBoardOption("Ciemny", font, 20);
+    darkBoardOption.setPosition(windowWidth / 2 + 0, 450);
 
     Difficulty selectedDifficulty = EASY;
     int selectedPlayers = 2;
+    std::string selectedBoardTexture = "assets/lightBoard.png";
 
     if (music.getStatus() != sf::Music::Playing) {
         music.play();
@@ -621,7 +639,7 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
                     if (newGameButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        startGame(window, selectedDifficulty, selectedPlayers, music);
+                        startGame(window, selectedDifficulty, selectedPlayers, music, selectedBoardTexture);
                     }
                     else if (rulesButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                         showRules(window, font, music);
@@ -644,6 +662,12 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
                     else if (fourPlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                         selectedPlayers = 4;
                     }
+                    else if (lightBoardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedBoardTexture = "assets/lightBoard.png";
+                    }
+                    else if (darkBoardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        selectedBoardTexture = "assets/darkBoard.png";
+                    }
                 }
             }
         }
@@ -654,6 +678,8 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
         twoPlayers.setFillColor(selectedPlayers == 2 ? sf::Color::Red : sf::Color::Black);
         threePlayers.setFillColor(selectedPlayers == 3 ? sf::Color::Red : sf::Color::Black);
         fourPlayers.setFillColor(selectedPlayers == 4 ? sf::Color::Red : sf::Color::Black);
+        lightBoardOption.setFillColor(selectedBoardTexture == "assets/lightBoard.png" ? sf::Color::Red : sf::Color::Black);
+        darkBoardOption.setFillColor(selectedBoardTexture == "assets/darkBoard.png" ? sf::Color::Red : sf::Color::Black);
 
         window.clear();
         window.draw(backgroundSprite);
@@ -668,6 +694,9 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
         window.draw(twoPlayers);
         window.draw(threePlayers);
         window.draw(fourPlayers);
+        window.draw(boardColorText);
+        window.draw(lightBoardOption);
+        window.draw(darkBoardOption);
 
         window.display();
     }
