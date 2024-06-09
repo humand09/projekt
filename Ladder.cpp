@@ -7,14 +7,14 @@ Ladder::Ladder(int start, int end, sf::Sound& sound) : mStart(start), mEnd(end),
 }
 
 void Ladder::triggerEvent(Player& player, int& diceResult, bool& extraRoll) {
-    player.moveToPosition(mEnd); // Przesuni?cie gracza na koniec drabiny
-    ladderKnockSound.play(); // Odtworzenie d?wi?ku drabiny
+    player.moveToPosition(mEnd); // Przesuniêcie gracza na koniec drabiny
+    ladderKnockSound.play(); // Odtworzenie dŸwiêku drabiny
     std::cout << player.getName() << " climbed a ladder! Moving up to " << mEnd << ".\n"; // Informacja o zdarzeniu
 }
 
 void Ladder::draw(sf::RenderWindow& window) const {
-    sf::Vector2f topLeft = adjustPosition(getPosition(mStart), sf::Vector2f(290, 290), 14); // Obliczenie pozycji pocz?tkowej drabiny
-    sf::Vector2f bottomRight = adjustPosition(getPosition(mEnd), sf::Vector2f(290, 290), 14); // Obliczenie pozycji ko?cowej drabiny
+    sf::Vector2f topLeft = adjustPosition(getPosition(mStart), sf::Vector2f(290, 290), 14); // Obliczenie pozycji pocz¹tkowej drabiny
+    sf::Vector2f bottomRight = adjustPosition(getPosition(mEnd), sf::Vector2f(290, 290), 14); // Obliczenie pozycji koñcowej drabiny
     drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, mTextureFile); // Rysowanie drabiny na planszy
 }
 

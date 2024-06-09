@@ -4,9 +4,13 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 
+// Klasa Player
 class Player {
 public:
+    // Konstruktor
     Player(const sf::Color& color, const std::string& name);
+
+    // Metody rysowania, ruchu i aktualizacji gracza
     void draw(sf::RenderWindow& window, const sf::Vector2f& offset) const;
     void moveToPosition(int position);
     void update(float deltaTime);
@@ -15,6 +19,7 @@ public:
     void resetPosition();
 
 private:
+    // Atrybuty gracza
     sf::CircleShape mShape;
     sf::Vector2f mTargetPosition;
     bool mMoving;

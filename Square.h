@@ -5,11 +5,15 @@
 #include <string>
 #include "Player.h"
 
+// Abstrakcyjna klasa Square
 class Square {
 public:
+    // Czyste wirtualne metody do obslugi zdarzen i rysowania
     virtual void triggerEvent(Player& player, int& diceResult, bool& extraRoll) = 0;
     virtual void draw(sf::RenderWindow& window) const = 0;
+
+    // Wirtualny destruktor
     virtual ~Square() {}
 };
 
-#endif
+#endif // SQUARE_H
