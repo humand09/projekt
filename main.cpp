@@ -9,8 +9,6 @@
 #include <fstream>
 #include <sstream>
 
-//usunąłem tą funkcje co czytała pozycję mysz bo była do debugu tylko
-
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
 
@@ -23,6 +21,8 @@ const int boardSize = 100;
 sf::Texture diceTextures[6];
 std::string diceImageFiles[6] = { "assets/1.png", "assets/2.png", "assets/3.png", "assets/4.png", "assets/5.png", "assets/6.png" };
 sf::Texture bonusTexture;
+sf::Texture logoTexture;
+sf::Sprite logoSprite;
 
 sf::SoundBuffer snakeHissBuffer;
 sf::SoundBuffer bonusBuffer;
@@ -342,6 +342,14 @@ void loadTextures() {
     if (!bonusTexture.loadFromFile("assets/extraroll.png")) {
         std::cerr << "Failed to load bonus texture\n";
     }
+    if (!logoTexture.loadFromFile("assets/coolLogo.png")) {
+        std::cerr << "Failed to load logo texture\n";
+    }
+    else {
+        logoSprite.setTexture(logoTexture);
+        logoSprite.setPosition(604, 338);
+        logoSprite.setScale(0.5f, 0.5f); // Adjust scale as needed
+    }
 }
 
 void loadSounds() {
@@ -455,6 +463,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, 
                         imageName = imageName.substr(startPos, endPos - startPos);
                         diceValue.setString("Wartosc: " + imageName);
                         diceValue.setPosition(windowWidth - 200, 150);
+                        diceSprite.setPosition(666, 91);
                         if (!extraRoll) {
                             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
                         }
@@ -485,6 +494,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, 
                 imageName = imageName.substr(startPos, endPos - startPos);
                 diceValue.setString("Wartosc: " + imageName);
                 diceValue.setPosition(windowWidth - 200, 150);
+                diceSprite.setPosition(666, 91);
                 if (!extraRoll) {
                     currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
                 }
@@ -546,6 +556,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, 
         window.draw(rollButton);
         window.draw(stopButton);
         window.draw(playerPositions);
+        window.draw(logoSprite);
         if (!isRolling && !diceValue.getString().isEmpty()) {
             window.draw(diceValue);
         }
