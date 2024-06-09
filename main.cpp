@@ -364,16 +364,16 @@ void loadTextures() {
 
 void loadSounds() {
     if (!snakeHissBuffer.loadFromFile("assets/snakeHiss.ogg")) {
-        std::cerr << "Failed to load snake hiss sound\n";
+        std::cerr << "Failed to load snake sound\n";
     }
     if (!bonusBuffer.loadFromFile("assets/bonus.ogg")) {
         std::cerr << "Failed to load bonus sound\n";
     }
     if (!ladderKnockBuffer.loadFromFile("assets/ladderKnock.ogg")) {
-        std::cerr << "Failed to load ladder knock sound\n";
+        std::cerr << "Failed to load ladder sound\n";
     }
     if (!clickInGameBuffer.loadFromFile("assets/clickInGame.ogg")) {
-        std::cerr << "Failed to load click in game sound\n";
+        std::cerr << "Failed to load click sound\n";
     }
     if (!diceStartBuffer.loadFromFile("assets/diceStart.ogg")) {
         std::cerr << "Failed to load dice start sound\n";
