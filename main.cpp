@@ -8,6 +8,7 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <memory>
 
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
@@ -42,7 +43,6 @@ sf::Vector2f adjustPosition(const sf::Vector2f& originalPosition, const sf::Vect
     direction /= length;
     return originalPosition + direction * offset;
 }
-
 
 void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vector2f& topLeft, const sf::Vector2f& bottomRight, const std::string& textureFile) {
     sf::Texture texture;
@@ -163,7 +163,6 @@ public:
         drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, mTextureFile);
     }
 
-
 private:
     int mStart;
     int mEnd;
@@ -198,7 +197,6 @@ public:
         sf::Vector2f bottomRight = adjustPosition(getPosition(mEnd), sf::Vector2f(290, 290), 14);
         drawRectangleWithTextureAndRotation(window, topLeft, bottomRight, mTextureFile);
     }
-
 
 private:
     int mStart;
@@ -264,7 +262,7 @@ public:
         mBoardSprite.setTexture(mBoardTexture);
         mBoardSprite.setPosition(10, 10);
 
-        mSquares.resize(boardSize, nullptr);
+        mSquares.resize(boardSize);
         loadFromFile(getFilenameForDifficulty(difficulty));
     }
 
@@ -290,16 +288,12 @@ public:
         mBoardSprite.setTexture(mBoardTexture);
     }
 
-    ~Board() {
-        for (Square* square : mSquares) {
-            delete square;
-        }
-    }
+    ~Board() = default;
 
 private:
     sf::Texture mBoardTexture;
     sf::Sprite mBoardSprite;
-    std::vector<Square*> mSquares;
+    std::vector<std::unique_ptr<Square>> mSquares;
 
     std::string getFilenameForDifficulty(Difficulty difficulty) {
         switch (difficulty) {
@@ -329,13 +323,13 @@ private:
 
             switch (type) {
             case 1:
-                mSquares[start] = new Ladder(start, end);
+                mSquares[start] = std::make_unique<Ladder>(start, end);
                 break;
             case 2:
-                mSquares[start] = new Snake(start, end);
+                mSquares[start] = std::make_unique<Snake>(start, end);
                 break;
             case 3:
-                mSquares[start] = new Bonus(start);
+                mSquares[start] = std::make_unique<Bonus>(start);
                 break;
             default:
                 std::cerr << "Unknown type: " << type << std::endl;
