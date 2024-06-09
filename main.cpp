@@ -27,6 +27,20 @@ sf::Texture diceTextures[6];
 std::string diceImageFiles[6] = { "assets/1.png", "assets/2.png", "assets/3.png", "assets/4.png", "assets/5.png", "assets/6.png" };
 sf::Texture bonusTexture;
 
+sf::SoundBuffer snakeHissBuffer;
+sf::SoundBuffer bonusBuffer;
+sf::SoundBuffer ladderKnockBuffer;
+sf::SoundBuffer clickInMenuBuffer;
+sf::SoundBuffer clickInGameBuffer;
+sf::SoundBuffer diceStartBuffer;
+
+sf::Sound snakeHissSound;
+sf::Sound bonusSound;
+sf::Sound ladderKnockSound;
+sf::Sound clickInMenuSound;
+sf::Sound clickInGameSound;
+sf::Sound diceStartSound;
+
 void drawRectangleWithTextureAndRotation(sf::RenderWindow& window, const sf::Vector2f& topLeft, const sf::Vector2f& bottomRight, const std::string& textureFile) {
     sf::Texture texture;
     if (!texture.loadFromFile(textureFile)) {
@@ -136,6 +150,7 @@ public:
     }
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         player.moveToPosition(mEnd);
+        snakeHissSound.play();
         std::cout << player.getName() << " landed on a snake! Sliding down to " << mEnd << ".\n";
     }
 
@@ -170,6 +185,7 @@ public:
     }
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
         player.moveToPosition(mEnd);
+        ladderKnockSound.play();
         std::cout << player.getName() << " climbed a ladder! Moving up to " << mEnd << ".\n";
     }
 
@@ -200,6 +216,7 @@ class Bonus : public Square {
 public:
     Bonus(int position) : mPosition(position) {}
     void triggerEvent(Player& player, int& diceResult, bool& extraRoll) override {
+        bonusSound.play();
         std::cout << player.getName() << " landed on a bonus! Double roll allowed.\n";
         extraRoll = true;
     }
@@ -332,8 +349,37 @@ void loadTextures() {
     }
 }
 
+void loadSounds() {
+    if (!snakeHissBuffer.loadFromFile("assets/snakeHiss.ogg")) {
+        std::cerr << "Failed to load snake hiss sound\n";
+    }
+    if (!bonusBuffer.loadFromFile("assets/bonus.ogg")) {
+        std::cerr << "Failed to load bonus sound\n";
+    }
+    if (!ladderKnockBuffer.loadFromFile("assets/ladderKnock.ogg")) {
+        std::cerr << "Failed to load ladder knock sound\n";
+    }
+    if (!clickInMenuBuffer.loadFromFile("assets/clickInMenu.ogg")) {
+        std::cerr << "Failed to load click in menu sound\n";
+    }
+    if (!clickInGameBuffer.loadFromFile("assets/clickInGame.ogg")) {
+        std::cerr << "Failed to load click in game sound\n";
+    }
+    if (!diceStartBuffer.loadFromFile("assets/diceStart.ogg")) {
+        std::cerr << "Failed to load dice start sound\n";
+    }
+
+    snakeHissSound.setBuffer(snakeHissBuffer);
+    bonusSound.setBuffer(bonusBuffer);
+    ladderKnockSound.setBuffer(ladderKnockBuffer);
+    clickInMenuSound.setBuffer(clickInMenuBuffer);
+    clickInGameSound.setBuffer(clickInGameBuffer);
+    diceStartSound.setBuffer(diceStartBuffer);
+}
+
 void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, sf::Music& music, const std::string& boardTexture) {
     loadTextures();
+    loadSounds();
 
     sf::Sprite diceSprite;
     diceSprite.setTexture(diceTextures[0]);
@@ -403,6 +449,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, 
                         faceChangeClock.restart();
                         clock.restart();
                         diceValue.setString("");
+                        diceStartSound.play();
                     }
                     else if (stopButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y) && isRolling) {
                         isRolling = false;
@@ -423,6 +470,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, 
                         else {
                             extraRoll = false;
                         }
+                        clickInGameSound.play();
                     }
                 }
             }
@@ -548,6 +596,7 @@ void showRules(sf::RenderWindow& window, sf::Font& font, sf::Music& music) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
                     if (backButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         return;
                     }
                 }
@@ -639,33 +688,43 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
                     if (newGameButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         startGame(window, selectedDifficulty, selectedPlayers, music, selectedBoardTexture);
                     }
                     else if (rulesButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         showRules(window, font, music);
                     }
                     else if (easyOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedDifficulty = EASY;
                     }
                     else if (mediumOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedDifficulty = MEDIUM;
                     }
                     else if (hardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedDifficulty = HARD;
                     }
                     else if (twoPlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedPlayers = 2;
                     }
                     else if (threePlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedPlayers = 3;
                     }
                     else if (fourPlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedPlayers = 4;
                     }
                     else if (lightBoardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedBoardTexture = "assets/lightBoard.png";
                     }
                     else if (darkBoardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        clickInMenuSound.play();
                         selectedBoardTexture = "assets/darkBoard.png";
                     }
                 }
