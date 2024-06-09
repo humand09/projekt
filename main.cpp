@@ -27,7 +27,7 @@ public:
     }
 
     void run() {
-        sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Snakes and Ladders");
+        sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Snakes and Ladders", sf::Style::Titlebar | sf::Style::Close);
         window.setFramerateLimit(60);
 
         sf::Music music;
@@ -274,7 +274,15 @@ private:
 
         void triggerEvent(Player& player, int& diceResult, bool& extraRoll) const {
             if (mSquares[player.getPosition()]) {
-                mSquares[player.getPosition()]->triggerEvent(player, diceResult, extraRoll);
+                if (auto snake = dynamic_cast<Snake*>(mSquares[player.getPosition()].get())) {
+                    snake->triggerEvent(player, diceResult, extraRoll);
+                }
+                else if (auto ladder = dynamic_cast<Ladder*>(mSquares[player.getPosition()].get())) {
+                    ladder->triggerEvent(player, diceResult, extraRoll);
+                }
+                else if (auto bonus = dynamic_cast<Bonus*>(mSquares[player.getPosition()].get())) {
+                    bonus->triggerEvent(player, diceResult, extraRoll);
+                }
             }
         }
 
