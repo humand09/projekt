@@ -9,10 +9,7 @@
 #include <fstream>
 #include <sstream>
 
-void printMousePosition(sf::RenderWindow& window) {
-    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-    std::cout << "Mouse Position: x = " << mousePos.x << ", y = " << mousePos.y << std::endl;
-}
+//usunąłem tą funkcje co czytała pozycję mysz bo była do debugu tylko
 
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
@@ -30,14 +27,12 @@ sf::Texture bonusTexture;
 sf::SoundBuffer snakeHissBuffer;
 sf::SoundBuffer bonusBuffer;
 sf::SoundBuffer ladderKnockBuffer;
-sf::SoundBuffer clickInMenuBuffer;
 sf::SoundBuffer clickInGameBuffer;
 sf::SoundBuffer diceStartBuffer;
 
 sf::Sound snakeHissSound;
 sf::Sound bonusSound;
 sf::Sound ladderKnockSound;
-sf::Sound clickInMenuSound;
 sf::Sound clickInGameSound;
 sf::Sound diceStartSound;
 
@@ -359,9 +354,6 @@ void loadSounds() {
     if (!ladderKnockBuffer.loadFromFile("assets/ladderKnock.ogg")) {
         std::cerr << "Failed to load ladder knock sound\n";
     }
-    if (!clickInMenuBuffer.loadFromFile("assets/clickInMenu.ogg")) {
-        std::cerr << "Failed to load click in menu sound\n";
-    }
     if (!clickInGameBuffer.loadFromFile("assets/clickInGame.ogg")) {
         std::cerr << "Failed to load click in game sound\n";
     }
@@ -372,7 +364,6 @@ void loadSounds() {
     snakeHissSound.setBuffer(snakeHissBuffer);
     bonusSound.setBuffer(bonusBuffer);
     ladderKnockSound.setBuffer(ladderKnockBuffer);
-    clickInMenuSound.setBuffer(clickInMenuBuffer);
     clickInGameSound.setBuffer(clickInGameBuffer);
     diceStartSound.setBuffer(diceStartBuffer);
 }
@@ -596,7 +587,6 @@ void showRules(sf::RenderWindow& window, sf::Font& font, sf::Music& music) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
                     if (backButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         return;
                     }
                 }
@@ -688,43 +678,33 @@ void showMenu(sf::RenderWindow& window, sf::Music& music) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
                     if (newGameButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         startGame(window, selectedDifficulty, selectedPlayers, music, selectedBoardTexture);
                     }
                     else if (rulesButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         showRules(window, font, music);
                     }
                     else if (easyOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedDifficulty = EASY;
                     }
                     else if (mediumOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedDifficulty = MEDIUM;
                     }
                     else if (hardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedDifficulty = HARD;
                     }
                     else if (twoPlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedPlayers = 2;
                     }
                     else if (threePlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedPlayers = 3;
                     }
                     else if (fourPlayers.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedPlayers = 4;
                     }
                     else if (lightBoardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedBoardTexture = "assets/lightBoard.png";
                     }
                     else if (darkBoardOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        clickInMenuSound.play();
                         selectedBoardTexture = "assets/darkBoard.png";
                     }
                 }
