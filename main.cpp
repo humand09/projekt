@@ -430,6 +430,11 @@ private:
                             diceValue.setPosition(windowWidth - 200, 150);
                             diceSprite.setPosition(666, 91);
                             if (!extraRoll) {
+                                if (currentPlayer->getPosition() == boardSize - 1) {
+                                    displayWinMessage(window, currentPlayerIndex + 1);
+                                    window.close();
+                                    return;
+                                }
                                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
                             }
                             else {
@@ -461,6 +466,11 @@ private:
                     diceValue.setPosition(windowWidth - 200, 150);
                     diceSprite.setPosition(666, 91);
                     if (!extraRoll) {
+                        if (currentPlayer->getPosition() == boardSize - 1) {
+                            displayWinMessage(window, currentPlayerIndex + 1);
+                            window.close();
+                            return;
+                        }
                         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
                     }
                     else {
@@ -525,6 +535,28 @@ private:
             if (!isRolling && !diceValue.getString().isEmpty()) {
                 window.draw(diceValue);
             }
+            window.display();
+        }
+    }
+
+    void displayWinMessage(sf::RenderWindow& window, int playerNumber) {
+        sf::Font font;
+        font.loadFromFile("assets/arial.ttf");
+        sf::Text winText("Gracz " + std::to_string(playerNumber) + " Wygral!", font, 50);
+        winText.setPosition(windowWidth / 2 - winText.getGlobalBounds().width / 2, windowHeight / 2 - winText.getGlobalBounds().height / 2);
+        winText.setFillColor(sf::Color::Red);
+
+        while (window.isOpen()) {
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed || event.type == sf::Event::KeyPressed) {
+                    window.close();
+                    return;
+                }
+            }
+
+            window.clear();
+            window.draw(winText);
             window.display();
         }
     }
