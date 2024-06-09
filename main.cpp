@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <vector>
 #include <ctime>
 #include <cstdlib>
@@ -12,9 +13,6 @@ void printMousePosition(sf::RenderWindow& window) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
     std::cout << "Mouse Position: x = " << mousePos.x << ", y = " << mousePos.y << std::endl;
 }
-
-
-
 
 enum Difficulty { EASY, MEDIUM, HARD };
 Difficulty gameDifficulty;
@@ -58,7 +56,7 @@ public:
         : mPosition(0), mTargetPosition(0, 0), mMoving(false), mName(name) {
         mShape.setRadius(10);
         mShape.setFillColor(color);
-        mShape.setPosition(10, 10); // Start at position 0
+        mShape.setPosition(10, 10);
     }
 
     void draw(sf::RenderWindow& window, const sf::Vector2f& offset) const {
@@ -95,8 +93,8 @@ public:
                 mMoving = false;
             }
             else {
-                direction /= distance; // Normalize the direction vector
-                mShape.move(direction * 100.0f * deltaTime); // Move by 100 units per second
+                direction /= distance;
+                mShape.move(direction * 100.0f * deltaTime);
             }
         }
     }
@@ -111,8 +109,8 @@ public:
 
     void resetPosition() {
         mPosition = 0;
-        mShape.setPosition(34, 540); // Reset position to 0
-        mTargetPosition = sf::Vector2f(33, 540); //Square 0 cords
+        mShape.setPosition(34, 540);
+        mTargetPosition = sf::Vector2f(33, 540);
     }
 
 private:
@@ -217,7 +215,7 @@ public:
         else {
             bonusSprite.setPosition((9 - col) * 60 + 10, (9 - row) * 60 + 10);
         }
-        sf::Vector2f targetPos(290, 290); // ewentu 285 280
+        sf::Vector2f targetPos(290, 290);
         sf::Vector2f currentPos = bonusSprite.getPosition();
         sf::Vector2f direction = targetPos - currentPos;
         float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -327,7 +325,7 @@ void loadTextures() {
     }
 }
 
-void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) {
+void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers, sf::Music& music) {
     loadTextures();
 
     sf::Sprite diceSprite;
@@ -362,7 +360,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
     players.resize(numPlayers);
 
     for (auto& player : players) {
-        player->resetPosition(); // Teleport all players to position 0 at the start
+        player->resetPosition();
     }
 
     int currentPlayerIndex = 0;
@@ -378,10 +376,13 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
 
     srand(static_cast<unsigned int>(time(0)));
 
+    if (music.getStatus() != sf::Music::Playing) {
+        music.play();
+    }
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
-            //printMousePosition(window); //f dbg
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
@@ -506,7 +507,7 @@ void startGame(sf::RenderWindow& window, Difficulty difficulty, int numPlayers) 
     }
 }
 
-void showRules(sf::RenderWindow& window, sf::Font& font) {
+void showRules(sf::RenderWindow& window, sf::Font& font, sf::Music& music) {
     std::ifstream file("assets/zasady.txt");
     if (!file.is_open()) {
         std::cerr << "Error opening file: zasady.txt" << std::endl;
@@ -524,6 +525,10 @@ void showRules(sf::RenderWindow& window, sf::Font& font) {
     sf::Text backButton("Powrot do menu", font, 30);
     backButton.setPosition(windowWidth / 2 - backButton.getGlobalBounds().width / 2, windowHeight - 100);
     backButton.setFillColor(sf::Color::Black);
+
+    if (music.getStatus() != sf::Music::Playing) {
+        music.play();
+    }
 
     while (window.isOpen()) {
         sf::Event event;
@@ -549,7 +554,7 @@ void showRules(sf::RenderWindow& window, sf::Font& font) {
     }
 }
 
-void showMenu(sf::RenderWindow& window) {
+void showMenu(sf::RenderWindow& window, sf::Music& music) {
     sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("assets/background.png")) {
         std::cerr << "Failed to load background texture\n";
@@ -601,6 +606,10 @@ void showMenu(sf::RenderWindow& window) {
     Difficulty selectedDifficulty = EASY;
     int selectedPlayers = 2;
 
+    if (music.getStatus() != sf::Music::Playing) {
+        music.play();
+    }
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -612,10 +621,10 @@ void showMenu(sf::RenderWindow& window) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
                     if (newGameButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        startGame(window, selectedDifficulty, selectedPlayers);
+                        startGame(window, selectedDifficulty, selectedPlayers, music);
                     }
                     else if (rulesButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        showRules(window, font);
+                        showRules(window, font, music);
                     }
                     else if (easyOption.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                         selectedDifficulty = EASY;
@@ -668,7 +677,15 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Snakes and Ladders");
     window.setFramerateLimit(60);
 
-    showMenu(window);
+    sf::Music music;
+    if (!music.openFromFile("assets/muzyka.ogg")) {
+        std::cerr << "Failed to load music\n";
+        return -1;
+    }
+    music.setLoop(true);
+    music.setVolume(10);
+
+    showMenu(window, music);
 
     return 0;
 }
