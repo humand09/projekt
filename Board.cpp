@@ -18,7 +18,19 @@ void Board::draw(sf::RenderWindow& window) const {
     window.draw(mBoardSprite); // Rysowanie planszy w oknie
     for (const auto& square : mSquares) {
         if (square) {
-            square->draw(window); // Rysowanie kwadratów na planszy
+            // Dynamiczne rzutowanie i specyficzne rysowanie ró¿nych typów pól
+            if (auto snake = dynamic_cast<Snake*>(square.get())) {
+                snake->draw(window); // Rysowanie wê¿a
+            }
+            else if (auto ladder = dynamic_cast<Ladder*>(square.get())) {
+                ladder->draw(window); // Rysowanie drabiny
+            }
+            else if (auto bonus = dynamic_cast<Bonus*>(square.get())) {
+                bonus->draw(window); // Rysowanie bonusu
+            }
+            else {
+                square->draw(window); // Rysowanie innych pól (jeœli istniej¹)
+            }
         }
     }
 }
